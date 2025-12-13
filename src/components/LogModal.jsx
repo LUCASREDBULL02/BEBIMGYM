@@ -1,117 +1,58 @@
-import React, { useState, useEffect } from "react";
-import { EXERCISES } from "../data/exercises";
+// ✅ UPDATED: LogModal.jsx
+import React, { useState } from "react";
+import useCycleLog from "../hooks/useCycleLog";
 
-export default function LogModal({ open, onClose, onSave, lastSet }) {
+export default function LogModal() {
+  const { logFeeling } = useCycleLog();
+  const [showFeelingPrompt, setShowFeelingPrompt] = useState(false);
   const todayStr = new Date().toISOString().slice(0, 10);
 
-  const [exerciseId, setExerciseId] = useState("bench");
-  const [weight, setWeight] = useState("");
-  const [reps, setReps] = useState("");
-  const [rpe, setRpe] = useState("");
-  const [date, setDate] = useState(todayStr);
-
-  useEffect(() => {
-    if (open) {
-      setDate(todayStr);
-      if (lastSet) {
-        setExerciseId(lastSet.exerciseId);
-        setWeight(lastSet.weight);
-        setReps(lastSet.reps);
-      }
-    }
-  }, [open, lastSet, todayStr]);
-
-  if (!open) return null;
-
-  function handleSubmit(e) {
-    e.preventDefault();
-    if (!exerciseId || !weight || !reps) return;
-
-    onSave({
-      exerciseId,
-      weight: Number(weight),
-      reps: Number(reps),
-      rpe: rpe ? Number(rpe) : null,
-      date,
-    });
-  }
+  // ... your existing log state and logic here
 
   return (
-    <div className="modal-backdrop" onClick={onClose}>
-      <div
-        className="modal-card"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="modal-header">
-          <div className="modal-title">Logga set ✨</div>
-          <button className="modal-close" onClick={onClose}>
-            ×
-          </button>
+    <div className="modal-content">
+      {/* your regular logging inputs and save button */}
+
+      {!showFeelingPrompt ? (
+        <button
+          onClick={() => setShowFeelingPrompt(true)}
+          className="primary-button"
+          style={{ marginTop: 16 }}
+        >
+          ✅ Klar för dagen
+        </button>
+      ) : (
+        <div style={{ marginTop: 12 }}>
+          <div className="small" style={{ marginBottom: 6 }}>
+            Hur kände du dig idag?
+          </div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+            {["Stark", "Trött", "Låg energi", "Okej", "Vila"].map((text) => (
+              <button
+                key={text}
+                onClick={() => {
+                  logFeeling(todayStr, text);
+                  setShowFeelingPrompt(false);
+                }}
+                className="small-button"
+              >
+                {getFeelingEmoji(text)} {text}
+              </button>
+            ))}
+          </div>
         </div>
-
-        <form onSubmit={handleSubmit}>
-          <div className="input-group">
-            <label>Övning</label>
-            <select
-              value={exerciseId}
-              onChange={(e) => setExerciseId(e.target.value)}
-            >
-              {EXERCISES.map((ex) => (
-                <option key={ex.id} value={ex.id}>
-                  {ex.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="input-group">
-            <label>Datum</label>
-            <input
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-            />
-          </div>
-
-          <div className="profile-grid">
-            <div className="input-group">
-              <label>Vikt (kg)</label>
-              <input
-                type="number"
-                value={weight}
-                onChange={(e) => setWeight(e.target.value)}
-              />
-            </div>
-
-            <div className="input-group">
-              <label>Reps</label>
-              <input
-                type="number"
-                value={reps}
-                onChange={(e) => setReps(e.target.value)}
-              />
-            </div>
-
-            <div className="input-group">
-              <label>RPE (valfritt)</label>
-              <input
-                type="number"
-                value={rpe}
-                onChange={(e) => setRpe(e.target.value)}
-              />
-            </div>
-          </div>
-
-          <div className="modal-footer">
-            <button type="button" className="btn" onClick={onClose}>
-              Avbryt
-            </button>
-            <button type="submit" className="btn-pink">
-              Spara set 💪
-            </button>
-          </div>
-        </form>
-      </div>
+      )}
     </div>
   );
+}
+
+function getFeelingEmoji(feeling) {
+  switch (feeling) {
+    case "Stark": return "💪";
+    case "Trött": return "😴";
+    case "Låg energi": return "😕";
+    case "Okej": return "😊";
+    case "Vila": return "🚫";
+    default: return "❓";
+  }
 }

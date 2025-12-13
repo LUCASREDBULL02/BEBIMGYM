@@ -636,3 +636,27 @@ body {
   font-size: 11px;
   opacity: 0.8;
 }
+.feeling-icon {
+  font-size: 12px;
+  position: absolute;
+  bottom: 4px;
+  right: 4px;
+  opacity: 0.85;
+}
+.primary-button {
+  background-color: #ec4899;
+  color: #0f172a;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 600;
+}
+.small-button {
+  font-size: 12px;
+  padding: 6px 10px;
+  background: #1e293b;
+  color: #f1f5f9;
+  border-radius: 999px;
+  border: none;
+}

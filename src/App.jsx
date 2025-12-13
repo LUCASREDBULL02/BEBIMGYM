@@ -10,7 +10,6 @@ import ProgramRunner from "./components/ProgramRunner.jsx";
 import PRList from "./components/PRList.jsx";
 import MuscleComparison from "./components/MuscleComparison.jsx";
 import LiftTools from "./components/LiftTools.jsx";
-import CycleTracker from "./components/CycleTracker.jsx";
 import { buildComparisonChartData } from "./utils/comparisonData.js";
 import { useBebiMood } from "./hooks/useBebiMood.js";
 import { EXERCISES } from "./data/exercises";
@@ -22,34 +21,10 @@ import { initialBosses } from "./data/bosses";
 // ------------------ KONSTANTER ------------------
 
 const BATTLE_REWARDS = [
-  {
-    id: "r_50xp",
-    xpRequired: 50,
-    label: "Warmup Queen",
-    desc: "Första 50 XP insamlade",
-    emoji: "💖",
-  },
-  {
-    id: "r_200xp",
-    xpRequired: 200,
-    label: "Tier 2 Gift",
-    desc: "Du har grindat till minst tier 2",
-    emoji: "🎁",
-  },
-  {
-    id: "r_500xp",
-    xpRequired: 500,
-    label: "Boss Slayer",
-    desc: "Massor av XP – du är farlig nu",
-    emoji: "🐲",
-  },
-  {
-    id: "r_1000xp",
-    xpRequired: 1000,
-    label: "Legendary Bebi",
-    desc: "När du nått 1000+ XP",
-    emoji: "🌟",
-  },
+  { id: "r_50xp", xpRequired: 50, label: "Warmup Queen", desc: "Första 50 XP insamlade", emoji: "💖" },
+  { id: "r_200xp", xpRequired: 200, label: "Tier 2 Gift", desc: "Du har grindat till minst tier 2", emoji: "🎁" },
+  { id: "r_500xp", xpRequired: 500, label: "Boss Slayer", desc: "Massor av XP – du är farlig nu", emoji: "🐲" },
+  { id: "r_1000xp", xpRequired: 1000, label: "Legendary Bebi", desc: "När du nått 1000+ XP", emoji: "🌟" },
 ];
 
 function calc1RM(weight, reps) {
@@ -97,7 +72,6 @@ function applyBossDamageToState(stateBosses, entry, oneRm, isPR) {
   return copy;
 }
 
-// Räkna allt baserat på loggar + profil
 function recomputeFromLogs(logs, profile) {
   let xp = 0;
   let battleTier = 1;
@@ -133,7 +107,6 @@ function recomputeFromLogs(logs, profile) {
   return { xp, battleTier, bosses, prMap };
 }
 
-// Muskelstats baserat direkt på loggar (StrengthLevel-style)
 function computeMuscleStatsFromLogs(logs, profile) {
   const stats = {};
   MUSCLES.forEach((m) => {
@@ -192,8 +165,6 @@ function computeMuscleStatsFromLogs(logs, profile) {
   return stats;
 }
 
-// ---------- CYCLE TRACKER HJÄLPSFUNKTION ----------
-
 function getCycleInfoForDay(date, config) {
   const length = Number(config.length) || 28;
   const start = config.startDate ? new Date(config.startDate) : null;
@@ -241,8 +212,6 @@ function getCycleInfoForDay(date, config) {
   return { dayInCycle, phase, strengthNote, color };
 }
 
-// ---------- CYCLE VIEW KOMPONENT ----------
-
 function CycleView({ cycleConfig, setCycleConfig }) {
   const length = Number(cycleConfig.length) || 28;
   const baseDate = cycleConfig.startDate
@@ -261,9 +230,7 @@ function CycleView({ cycleConfig, setCycleConfig }) {
     <div className="card">
       <h3 style={{ marginTop: 0, marginBottom: 8 }}>Cykel & Styrka 🌸</h3>
       <p className="small" style={{ marginBottom: 10 }}>
-        Här kan du se ungefär vilken fas du är i cykeln och hur du kan anpassa
-        träningen. Det är en förenklad modell, men ger en bra känsla för när
-        det är PR-läge och när det är deload-läge.
+        Här kan du se ungefär vilken fas du är i cykeln och hur du kan anpassa träningen. Det är en förenklad modell, men ger en bra känsla för när det är PR-läge och när det är deload-läge.
       </p>
 
       <div
@@ -328,8 +295,7 @@ function CycleView({ cycleConfig, setCycleConfig }) {
       </div>
 
       <div className="small" style={{ marginBottom: 8, opacity: 0.9 }}>
-        Kalendern nedan visar en hel cykel framåt från vald startdag. Färgen
-        visar fas, och texten ger en hint om hur du kan planera passen.
+        Kalendern nedan visar en hel cykel framåt från vald startdag. Färgen visar fas, och texten ger en hint om hur du kan planera passen.
       </div>
 
       <div
@@ -384,15 +350,11 @@ function CycleView({ cycleConfig, setCycleConfig }) {
           borderTop: "1px dashed rgba(148,163,184,0.5)",
         }}
       >
-        Tips: Använd denna vy tillsammans med program & boss raid. Planera dina
-        tyngsta pass under “Peak / Starkast”-dagarna och lägg deload / pump
-        runt PMS och mens. 💗
+        Tips: Använd denna vy tillsammans med program & boss raid. Planera dina tyngsta pass under “Peak / Starkast”-dagarna och lägg deload / pump runt PMS och mens. 💗
       </div>
     </div>
   );
 }
-
-// ------------------ HUVUDKOMPONENT ------------------
 
 export default function App() {
   const [view, setView] = useState("dashboard");
@@ -403,7 +365,6 @@ export default function App() {
     const saved = localStorage.getItem("bebi_logs");
     return saved ? JSON.parse(saved) : [];
   });
-
   useEffect(() => {
     localStorage.setItem("bebi_logs", JSON.stringify(logs));
   }, [logs]);
@@ -413,16 +374,8 @@ export default function App() {
     const saved = localStorage.getItem("bebi_profile");
     return saved
       ? JSON.parse(saved)
-      : {
-          name: "Maria Kristina",
-          nick: "Bebi",
-          age: 21,
-          height: 170,
-          weight: 68,
-          avatar: "/avatar.png",
-        };
+      : { name: "Maria Kristina", nick: "Bebi", age: 21, height: 170, weight: 68, avatar: "/avatar.png" };
   });
-
   useEffect(() => {
     localStorage.setItem("bebi_profile", JSON.stringify(profile));
   }, [profile]);
@@ -432,16 +385,8 @@ export default function App() {
     const saved = localStorage.getItem("bebi_bodyStats");
     return saved
       ? JSON.parse(saved)
-      : {
-          waist: [],
-          hips: [],
-          thigh: [],
-          glutes: [],
-          chest: [],
-          arm: [],
-        };
+      : { waist: [], hips: [], thigh: [], glutes: [], chest: [], arm: [] };
   });
-
   useEffect(() => {
     localStorage.setItem("bebi_bodyStats", JSON.stringify(bodyStats));
   }, [bodyStats]);
@@ -449,14 +394,8 @@ export default function App() {
   // Cykelkonfiguration – persisteras
   const [cycleConfig, setCycleConfig] = useState(() => {
     const saved = localStorage.getItem("bebi_cycle");
-    return saved
-      ? JSON.parse(saved)
-      : {
-          startDate: null,
-          length: 28,
-        };
+    return saved ? JSON.parse(saved) : { startDate: null, length: 28 };
   });
-
   useEffect(() => {
     localStorage.setItem("bebi_cycle", JSON.stringify(cycleConfig));
   }, [cycleConfig]);
@@ -627,8 +566,7 @@ export default function App() {
   }
 
   function handleNextDay() {
-    const prog =
-      PROGRAMS.find((p) => p.id === activeProgramId) || PROGRAMS[0];
+    const prog = PROGRAMS.find((p) => p.id === activeProgramId) || PROGRAMS[0];
     if (!prog) return;
     const next = (dayIndex + 1) % prog.days.length;
     setDayIndex(next);
@@ -651,7 +589,7 @@ export default function App() {
         <div className="sidebar-header">
           <div>
             <div className="sidebar-title">Bebi Gym v17</div>
-            <div className="sidebar-sub">För Maria Kristina 💗</div>
+            <div className="sidebar-sub">För {profile.name} 💗</div>
           </div>
         </div>
 
@@ -838,8 +776,7 @@ export default function App() {
           <div>
             <div className="main-title">Hej {profile.nick}! 💖</div>
             <div className="main-sub">
-              Idag är en perfekt dag att bli starkare. Varje set du gör skadar
-              bossar, ger XP och bygger din PR-historia.
+              Idag är en perfekt dag att bli starkare. Varje set du gör skadar bossar, ger XP och bygger din PR-historia.
             </div>
           </div>
           <button className="btn-pink" onClick={() => setShowModal(true)}>
@@ -852,20 +789,10 @@ export default function App() {
           <div className="row" style={{ alignItems: "flex-start" }}>
             <div className="col" style={{ flex: 1, gap: 10 }}>
               <div className="card small">
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    gap: 8,
-                  }}
-                >
+                <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
                   <div>
-                    <div style={{ fontSize: 13, fontWeight: 600 }}>
-                      XP & Level
-                    </div>
-                    <div className="small">
-                      Du får XP för varje tungt set
-                    </div>
+                    <div style={{ fontSize: 13, fontWeight: 600 }}>XP & Level</div>
+                    <div className="small">Du får XP för varje tungt set</div>
                   </div>
                   <div style={{ textAlign: "right", fontSize: 12 }}>
                     <div>{xp} XP</div>
@@ -876,10 +803,7 @@ export default function App() {
                   <div
                     className="progress-fill"
                     style={{
-                      width: `${Math.min(
-                        100,
-                        Math.round((xp / nextTierXp) * 100)
-                      )}%`,
+                      width: `${Math.min(100, Math.round((xp / nextTierXp) * 100))}%`,
                     }}
                   />
                 </div>
@@ -915,8 +839,7 @@ export default function App() {
             <h3 style={{ marginTop: 0 }}>Loggade set 📓</h3>
             {!logs.length && (
               <p className="small">
-                Inga set än. Klicka på “Logga set” för att lägga till ditt första
-                pass, Bebi 💗
+                Inga set än. Klicka på “Logga set” för att lägga till ditt första pass, Bebi 💗
               </p>
             )}
             <ul
@@ -945,8 +868,7 @@ export default function App() {
                     }}
                   >
                     <div>
-                      {l.date} • {ex?.name || l.exerciseId} • {l.weight} kg ×{" "}
-                      {l.reps} reps (1RM ca {calc1RM(l.weight, l.reps)} kg)
+                      {l.date} • {ex?.name || l.exerciseId} • {l.weight} kg × {l.reps} reps (1RM ca {calc1RM(l.weight, l.reps)} kg)
                     </div>
                     <button
                       className="btn"
@@ -984,13 +906,10 @@ export default function App() {
               <div className="card">
                 <h3 style={{ marginTop: 0 }}>Hur funkar raid? 🐉</h3>
                 <p className="small">
-                  Chest Beast tar mest skada av bänkpress. Glute Dragon hatar
-                  Hip Thrust / Benpress / Knäböj. Row Titan blir rasande av
-                  tunga roddar & marklyft.
+                  Chest Beast tar mest skada av bänkpress. Glute Dragon hatar Hip Thrust / Benpress / Knäböj. Row Titan blir rasande av tunga roddar & marklyft.
                 </p>
                 <p className="small">
-                  PR ger extra damage och triggar Rage-avatarläge. Allt sker
-                  automatiskt när du loggar set.
+                  PR ger extra damage och triggar Rage-avatarläge. Allt sker automatiskt när du loggar set.
                 </p>
               </div>
             </div>

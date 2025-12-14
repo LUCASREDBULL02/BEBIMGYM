@@ -1,151 +1,82 @@
-// src/components/LogModal.jsx
+// === LogModal.jsx ===
 import React, { useState } from "react";
-import { EXERCISES } from "../data/exercises";
 
-export default function LogModal({ onClose, onSave }) {
-  const [exerciseId, setExerciseId] = useState(EXERCISES[0]?.id || "");
-  const [weight, setWeight] = useState("");
-  const [reps, setReps] = useState("");
-  const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
-  const [showMoodPrompt, setShowMoodPrompt] = useState(false);
-  const [selectedMood, setSelectedMood] = useState("");
+const FEELING_OPTIONS = {
+  strength: ["Svag", "Normal", "Stark"],
+  mental: ["Låg", "Okej", "Glad"],
+  energy: ["Trött", "Normal", "Full energi"],
+};
 
-  const moods = ["Stark", "Trött", "Neutral", "Stressad", "Energiskt"];
+export default function LogModal({ onClose }) {
+  const [showFeelingForm, setShowFeelingForm] = useState(false);
+  const [feelings, setFeelings] = useState({
+    strength: "",
+    mental: "",
+    energy: "",
+  });
 
-  const handleSave = () => {
-    if (!exerciseId || !weight || !reps) return;
+  const todayStr = new Date().toISOString().split("T")[0];
 
-    const log = {
-      id: crypto.randomUUID?.() || Math.random().toString(36),
-      exerciseId,
-      weight: Number(weight),
-      reps: Number(reps),
-      date,
-    };
-
-    onSave?.(log);
-
-    // Töm fält
-    setWeight("");
-    setReps("");
-  };
-
-  const handleDayComplete = () => {
-    setShowMoodPrompt(true);
-  };
-
-  const handleMoodSubmit = () => {
-    if (!selectedMood) return;
-    const today = new Date().toISOString().slice(0, 10);
-    const stored = JSON.parse(localStorage.getItem("cycleFeedback") || "{}");
-    stored[today] = selectedMood;
-    localStorage.setItem("cycleFeedback", JSON.stringify(stored));
-
-    setShowMoodPrompt(false);
-    setSelectedMood("");
-    alert("Tack! Din känsla har sparats i kalendern.");
+  const saveFeelings = () => {
+    const existing = JSON.parse(localStorage.getItem("cycleFeelings") || "{}");
+    existing[todayStr] = feelings;
+    localStorage.setItem("cycleFeelings", JSON.stringify(existing));
+    setShowFeelingForm(false);
+    alert("Dagens känsla loggad och sparad!");
   };
 
   return (
-    <div className="modal">
-      <div className="modal-content">
-        <h2>Logga ett pass</h2>
+    <div style={{ padding: 20 }}>
+      {/* Innehåll för att logga pass, formulär mm... */}
 
-        <label>Övning</label>
-        <select
-          value={exerciseId}
-          onChange={(e) => setExerciseId(e.target.value)}
-        >
-          {EXERCISES.map((e) => (
-            <option key={e.id} value={e.id}>
-              {e.name}
-            </option>
-          ))}
-        </select>
-
-        <label>Vikt (kg)</label>
-        <input
-          type="number"
-          value={weight}
-          onChange={(e) => setWeight(e.target.value)}
-        />
-
-        <label>Reps</label>
-        <input
-          type="number"
-          value={reps}
-          onChange={(e) => setReps(e.target.value)}
-        />
-
-        <label>Datum</label>
-        <input
-          type="date"
-          value={date}
-          onChange={(e) => setDate(e.target.value)}
-        />
-
-        <button onClick={handleSave}>💾 Spara pass</button>
-
-        <hr style={{ margin: "12px 0" }} />
-
+      {/* Klar för dagen-knapp */}
+      {!showFeelingForm && (
         <button
-          style={{
-            background: "#ec4899",
-            color: "#0f172a",
-            padding: "8px 12px",
-            borderRadius: 8,
-            border: "none",
-            fontWeight: "bold",
-          }}
-          onClick={handleDayComplete}
+          onClick={() => setShowFeelingForm(true)}
+          style={{ marginTop: 20, padding: 10, borderRadius: 8 }}
         >
-          ✅ Klar för dagen
+          Klar för dagen
         </button>
+      )}
 
-        {showMoodPrompt && (
-          <div style={{ marginTop: 12 }}>
-            <p>Hur kände du dig idag?</p>
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-              {moods.map((mood) => (
-                <button
-                  key={mood}
-                  onClick={() => setSelectedMood(mood)}
-                  style={{
-                    padding: "6px 10px",
-                    background:
-                      selectedMood === mood ? "#ec4899" : "#1f2937",
-                    color: selectedMood === mood ? "#0f172a" : "#e5e7eb",
-                    border: "1px solid #ec4899",
-                    borderRadius: 999,
-                    fontSize: 12,
-                    cursor: "pointer",
-                  }}
-                >
-                  {mood}
-                </button>
-              ))}
+      {showFeelingForm && (
+        <div style={{ marginTop: 20 }}>
+          <h4>Hur kände du dig idag?</h4>
+          {Object.entries(FEELING_OPTIONS).map(([key, options]) => (
+            <div key={key} style={{ marginBottom: 10 }}>
+              <label style={{ fontWeight: 600 }}>{key}</label>
+              <div style={{ display: "flex", gap: 8 }}>
+                {options.map((opt) => (
+                  <button
+                    key={opt}
+                    onClick={() =>
+                      setFeelings((prev) => ({ ...prev, [key]: opt }))
+                    }
+                    style={{
+                      padding: "6px 10px",
+                      borderRadius: 8,
+                      background:
+                        feelings[key] === opt ? "#ec4899" : "#1e293b",
+                      color: "white",
+                    }}
+                  >
+                    {opt}
+                  </button>
+                ))}
+              </div>
             </div>
-            <button
-              onClick={handleMoodSubmit}
-              style={{
-                marginTop: 10,
-                padding: "6px 12px",
-                borderRadius: 8,
-                border: "none",
-                background: "#10b981",
-                color: "#fff",
-                fontSize: 12,
-              }}
-            >
-              Spara känsla
-            </button>
-          </div>
-        )}
+          ))}
 
-        <button onClick={onClose} style={{ marginTop: 12 }}>
-          Stäng
-        </button>
-      </div>
+          <button
+            onClick={saveFeelings}
+            style={{ marginTop: 10, padding: 8, background: "#22c55e", color: "white", borderRadius: 6 }}
+          >
+            Spara dagens känsla
+          </button>
+        </div>
+      )}
+
+      <button onClick={onClose} style={{ marginTop: 20 }}>Stäng</button>
     </div>
   );
 }

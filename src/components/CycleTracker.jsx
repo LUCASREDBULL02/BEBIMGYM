@@ -1,79 +1,85 @@
 // src/components/CycleTracker.jsx
-import React, { useEffect, useState } from "react";
-import useCycleLog from "../hooks/useCycleLog";
+import React, { useState, useEffect } from "react";
 
-const emojiMap = {
-  energized: "💪",
-  tired: "😴",
-  moody: "😠",
-  normal: "🙂",
+// Hjälpfunktion: få datumsträng (YYYY-MM-DD)
+function getDateKey(date) {
+  return date.toISOString().split("T")[0];
+}
+
+// Ikoner för olika känslor
+const moodIcons = {
+  Stark: "💪",
+  Trött: "😴",
+  Neutral: "🙂",
+  Stressad: "😵",
+  Energiskt: "⚡",
 };
 
+// Antal dagar att visa i kalendern
+const DAYS_TO_SHOW = 35;
+
 export default function CycleTracker() {
-  const { entries } = useCycleLog();
-  const [dates, setDates] = useState([]);
+  const [feedbackData, setFeedbackData] = useState({});
 
+  // Ladda feedback från localStorage vid första inladdning
   useEffect(() => {
-    const today = new Date();
-    const start = new Date(today);
-    start.setDate(start.getDate() - 20);
-    const end = new Date(today);
-    end.setDate(end.getDate() + 20);
-
-    const range = [];
-    const current = new Date(start);
-    while (current <= end) {
-      range.push(new Date(current));
-      current.setDate(current.getDate() + 1);
+    const stored = localStorage.getItem("cycleFeedback");
+    if (stored) {
+      try {
+        setFeedbackData(JSON.parse(stored));
+      } catch {
+        console.warn("Kunde inte läsa cycleFeedback från localStorage.");
+      }
     }
-
-    setDates(range);
   }, []);
 
-  function formatDate(date) {
-    return date.toISOString().split("T")[0];
-  }
+  // Skapa lista över de senaste 35 dagarna
+  const today = new Date();
+  const days = Array.from({ length: DAYS_TO_SHOW }, (_, i) => {
+    const date = new Date();
+    date.setDate(today.getDate() - (DAYS_TO_SHOW - 1 - i));
+    const key = getDateKey(date);
+    const mood = feedbackData[key];
+    return { date: key, mood };
+  });
 
   return (
-    <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(7, 1fr)",
-        gap: 4,
-        padding: 8,
-        background: "rgba(30,41,59,0.6)",
-        borderRadius: 12,
-      }}
-    >
-      {dates.map((date) => {
-        const dateStr = formatDate(date);
-        const feeling = entries[dateStr];
-        return (
+    <div style={{ padding: 16 }}>
+      <h2 style={{ marginBottom: 12 }}>Cykelkalender 🩸</h2>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(50px, 1fr))",
+          gap: 6,
+        }}
+      >
+        {days.map(({ date, mood }) => (
           <div
-            key={dateStr}
+            key={date}
             style={{
-              aspectRatio: "1 / 1",
-              background: "#0f172a",
-              color: "#e2e8f0",
-              fontSize: 11,
+              background: "#1f2937",
               borderRadius: 8,
-              padding: 4,
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              border: feeling ? "1px solid #ec4899" : "1px solid #1e293b",
+              padding: 6,
+              textAlign: "center",
+              fontSize: 12,
+              color: "#e5e7eb",
+              border: mood ? "2px solid #ec4899" : "1px solid #374151",
+              height: 60,
+              position: "relative",
             }}
           >
-            <div style={{ fontSize: 10 }}>
-              {date.getDate().toString().padStart(2, "0")}
-            </div>
-            <div style={{ fontSize: 16 }}>
-              {feeling ? emojiMap[feeling] || "❤️" : ""}
-            </div>
+            <div>{date.slice(5)}</div>
+            {mood && (
+              <div style={{ fontSize: 20, marginTop: 4 }}>
+                {moodIcons[mood] || "🩸"}
+              </div>
+            )}
           </div>
-        );
-      })}
+        ))}
+      </div>
+      <p style={{ marginTop: 10, fontSize: 12, opacity: 0.7 }}>
+        Visar hur du kände dig efter pass. Ändra i Logga Pass.
+      </p>
     </div>
   );
 }

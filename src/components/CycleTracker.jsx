@@ -1,85 +1,79 @@
-// src/components/CycleTracker.jsx
-import React, { useState, useEffect } from "react";
+// CycleTracker.jsx
+import React, { useEffect, useState } from "react";
+import Calendar from "react-calendar";
+import "react-calendar/dist/Calendar.css";
 
-// Hjälpfunktion: få datumsträng (YYYY-MM-DD)
-function getDateKey(date) {
-  return date.toISOString().split("T")[0];
-}
+const FEEDBACK_KEY = "cycleFeedback";
 
-// Ikoner för olika känslor
-const moodIcons = {
-  Stark: "💪",
-  Trött: "😴",
-  Neutral: "🙂",
-  Stressad: "😵",
-  Energiskt: "⚡",
+const getStoredFeedback = () => {
+  try {
+    return JSON.parse(localStorage.getItem(FEEDBACK_KEY)) || {};
+  } catch {
+    return {};
+  }
 };
 
-// Antal dagar att visa i kalendern
-const DAYS_TO_SHOW = 35;
+const saveFeedback = (data) => {
+  localStorage.setItem(FEEDBACK_KEY, JSON.stringify(data));
+};
+
+const moodIcons = {
+  strength: {
+    strong: "💪",
+    normal: "🙂",
+    weak: "😩",
+  },
+  mental: {
+    sharp: "🧠",
+    foggy: "🌫️",
+    stressed: "😰",
+  },
+  energy: {
+    energetic: "⚡",
+    ok: "😐",
+    tired: "😴",
+  },
+};
+
+const getIconSummary = (entry) => {
+  if (!entry) return "";
+  const { strength, mental, energy } = entry;
+  return `${moodIcons.strength[strength] || ""} ${moodIcons.mental[mental] || ""} ${moodIcons.energy[energy] || ""}`;
+};
 
 export default function CycleTracker() {
-  const [feedbackData, setFeedbackData] = useState({});
+  const [feedbackMap, setFeedbackMap] = useState(getStoredFeedback());
 
-  // Ladda feedback från localStorage vid första inladdning
   useEffect(() => {
-    const stored = localStorage.getItem("cycleFeedback");
-    if (stored) {
-      try {
-        setFeedbackData(JSON.parse(stored));
-      } catch {
-        console.warn("Kunde inte läsa cycleFeedback från localStorage.");
-      }
-    }
-  }, []);
+    saveFeedback(feedbackMap);
+  }, [feedbackMap]);
 
-  // Skapa lista över de senaste 35 dagarna
-  const today = new Date();
-  const days = Array.from({ length: DAYS_TO_SHOW }, (_, i) => {
-    const date = new Date();
-    date.setDate(today.getDate() - (DAYS_TO_SHOW - 1 - i));
-    const key = getDateKey(date);
-    const mood = feedbackData[key];
-    return { date: key, mood };
-  });
+  const tileContent = ({ date }) => {
+    const key = date.toISOString().slice(0, 10);
+    const entry = feedbackMap[key];
+    if (!entry) return null;
+    return (
+      <div style={{ fontSize: 12, textAlign: "center" }}>
+        {getIconSummary(entry)}
+      </div>
+    );
+  };
 
   return (
     <div style={{ padding: 16 }}>
-      <h2 style={{ marginBottom: 12 }}>Cykelkalender 🩸</h2>
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(50px, 1fr))",
-          gap: 6,
-        }}
-      >
-        {days.map(({ date, mood }) => (
-          <div
-            key={date}
-            style={{
-              background: "#1f2937",
-              borderRadius: 8,
-              padding: 6,
-              textAlign: "center",
-              fontSize: 12,
-              color: "#e5e7eb",
-              border: mood ? "2px solid #ec4899" : "1px solid #374151",
-              height: 60,
-              position: "relative",
-            }}
-          >
-            <div>{date.slice(5)}</div>
-            {mood && (
-              <div style={{ fontSize: 20, marginTop: 4 }}>
-                {moodIcons[mood] || "🩸"}
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
-      <p style={{ marginTop: 10, fontSize: 12, opacity: 0.7 }}>
-        Visar hur du kände dig efter pass. Ändra i Logga Pass.
-      </p>
+      <h2 style={{ fontSize: 18, marginBottom: 10 }}>Cykelkalender</h2>
+      <Calendar
+        tileContent={tileContent}
+        calendarType="ISO 8601"
+        locale="sv-SE"
+      />
     </div>
   );
 }
+
+export function logCycleFeedback({ date, strength, mental, energy }) {
+  const all = getStoredFeedback();
+  const key = date.toISOString().slice(0, 10);
+  all[key] = { strength, mental, energy };
+  saveFeedback(all);
+} 
